@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.rtl.min.css" integrity="sha384-CfCrinSRH2IR6a4e6fy2q6ioOX7O6Mtm1L9vRvFZ1trBncWmMePhzvafv7oIcWiW" crossorigin="anonymous">
+
+    <title>Image Uploader</title>
+    <style>
+        .card-img-top {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+    </style>
+  </head>
+  <body>
+    <h1 class="text-center">Upload Image</h1>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+               <div class="py-5 text-center bg-secondary text-white">
+                    <h2>Upload Your Image</h2>
+                <form id="uploadForm" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-danger">Upload</button>
+                </form>
+               </div>
+            </div>
+        </div>
+        <div class="row mt-5" id="imageContainer">
+        {% for x in img%}
+        <div class="col-sm-4">
+            <div class="card mb-4 shadow-sm">
+                <img src="{{ x.photo.url }}" class="card-img-top" alt="Image">
+                <div class="card-footer">
+                    <small class="text-muted">Uploaded on: {{ x.date }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        </div>
+    </div>
+
+    <!-- Optional JavaScript; choose one of the two! -->
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    // Create new card element
+                    const newCard = document.createElement('div');
+                    newCard.className = 'col-sm-4';
+                    newCard.innerHTML = `
+                        <div class="card mb-4 shadow-sm">
+                            <img src="${data.image_url}" class="card-img-top" alt="Image">
+                            <div class="card-footer">
+                                <small class="text-muted">Uploaded on: ${data.date}</small>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add to image container at the beginning
+                    document.getElementById('imageContainer').prepend(newCard);
+                    
+                    // Reset form
+                    this.reset();
+                    
+                    alert('Image uploaded successfully!');
+                } else {
+                    alert('Error uploading image: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error uploading image');
+            });
+        });
+    </script>
+
+    <!-- Option 2: Separate Popper and Bootstrap JS -->
+    <!--
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
+    -->
+  </body>
+</html>
